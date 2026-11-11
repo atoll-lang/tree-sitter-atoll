@@ -1,0 +1,248 @@
+========================================
+Test and bench items, messages, borrows
+========================================
+
+test "a thing works" {
+    assert(true)
+}
+
+skip bench "a slow thing" {
+}
+
+message welcome(name string) {
+    en = "Hello, {name}"
+    fr = plural count { one => "un", other => "des" }
+}
+
+fn take(p &mut Node, q &T) ^Node? using [IO] where T: Display {
+    b := b'='
+    raw := r"""raw $x \n"""
+    m := Map.new[string, int]()
+    d := Df[T] { handle: 1 }
+    return None
+}
+
+---
+
+(source_file
+  (test_item
+    (identifier)
+    (string_literal
+      (string_content))
+    (block
+      (expression_statement
+        (call_expression
+          (identifier_expression
+            (identifier))
+          (call_argument_list
+            (boolean_literal))))))
+  (test_item
+    (identifier)
+    (identifier)
+    (string_literal
+      (string_content))
+    (block))
+  (message_declaration
+    (identifier)
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (named_type
+          (type_identifier))))
+    (message_body
+      (message_line
+        (identifier)
+        (message_text
+          (string_literal
+            (string_content))))
+      (message_line
+        (identifier)
+        (message_text
+          (message_block
+            (identifier)
+            (identifier)
+            (message_arm
+              (identifier)
+              (message_text
+                (string_literal
+                  (string_content))))
+            (message_arm
+              (identifier)
+              (message_text
+                (string_literal
+                  (string_content)))))))))
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (borrow_type
+          (named_type
+            (type_identifier))))
+      (parameter
+        (identifier)
+        (borrow_type
+          (named_type
+            (type_identifier)))))
+    (optional_type
+      (pointer_type
+        (named_type
+          (type_identifier))))
+    (using_clause
+      (identifier))
+    (where_clause
+      (where_predicate
+        (named_type
+          (type_identifier))
+        (named_type
+          (type_identifier))))
+    (block
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (byte_literal))
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (raw_multiline_string_literal))
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (generic_method_call_expression
+          (identifier_expression
+            (identifier))
+          (identifier)
+          (call_type_arguments
+            (call_type_open)
+            (named_type
+              (type_identifier))
+            (named_type
+              (type_identifier)))
+          (call_argument_list)))
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (generic_struct_literal
+          (named_type
+            (type_identifier))
+          (struct_type_arguments
+            (struct_type_open)
+            (named_type
+              (type_identifier)))
+          (struct_literal_field
+            (identifier)
+            (integer_literal))))
+      (return_statement
+        (identifier_expression
+          (identifier))))))
+
+========================================
+Modern declarations and data layer
+========================================
+
+distinct type Id = int
+
+enum Role {
+    Admin
+    Member = 2
+}
+
+error AppError = Io | Db
+
+model Booking {
+    booking_number: string
+    status: BookingStatus = CONFIRMED
+    BELONGS TO Customer VIA customer_id
+    HAS MANY LineItem
+    UNIQUE INDEX (booking_number)
+}
+
+fn q() void {
+    r := ONE FROM Booking WHERE id == 1 AS FRAME?
+    return when Postgres { FROM Booking } else { FROM Booking }
+}
+
+---
+
+(source_file
+  (distinct_type
+    (type_identifier)
+    (named_type
+      (type_identifier)))
+  (enum_declaration
+    (type_identifier)
+    (enum_body
+      (enum_variant
+        (type_identifier))
+      (enum_variant
+        (type_identifier)
+        (integer_literal))))
+  (error_declaration
+    (type_identifier)
+    (union_type
+      (named_type
+        (type_identifier))
+      (named_type
+        (type_identifier))))
+  (model_declaration
+    (type_identifier)
+    (model_body
+      (field_declaration
+        (identifier)
+        (named_type
+          (type_identifier)))
+      (field_declaration
+        (identifier)
+        (named_type
+          (type_identifier))
+        (identifier_expression
+          (identifier)))
+      (relation_clause
+        (identifier)
+        (identifier))
+      (relation_clause
+        (identifier))
+      (index_clause
+        (identifier))))
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (named_type
+      (type_identifier))
+    (block
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (identifier_expression
+          (identifier)))
+      (expression_statement
+        (query_expression
+          (query_source
+            (named_type
+              (type_identifier)))
+          (query_clause
+            (binary_expression
+              (identifier_expression
+                (identifier))
+              (integer_literal)))
+          (query_clause)))
+      (return_statement
+        (identifier_expression
+          (identifier)))
+      (expression_statement
+        (struct_literal
+          (named_type
+            (type_identifier))
+          (struct_literal_shorthand
+            (identifier))
+          (struct_literal_shorthand
+            (identifier))))
+      (expression_statement
+        (struct_literal
+          (named_type
+            (type_identifier))
+          (struct_literal_shorthand
+            (identifier))
+          (struct_literal_shorthand
+            (identifier)))))))

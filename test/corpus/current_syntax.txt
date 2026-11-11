@@ -1,0 +1,1021 @@
+========================================
+Visibility, paths, receiver methods
+========================================
+
+internal import { open } from std/fs
+import File from fs
+import oss.example/csv
+import ./billing
+internal fn Order.total(self, other &Order) int => self.amount + other.amount
+
+---
+
+(source_file
+  (import_declaration
+    (visibility_modifier)
+    (import_items
+      (identifier))
+    (import_path
+      (identifier)
+      (identifier)))
+  (import_declaration
+    (identifier)
+    (import_path
+      (identifier)))
+  (import_declaration
+    (import_path
+      (identifier)
+      (identifier)
+      (identifier)))
+  (import_declaration
+    (import_path
+      (identifier)))
+  (function_declaration
+    (visibility_modifier)
+    (receiver_prefix
+      (named_type
+        (type_identifier)))
+    (identifier)
+    (parameter_list
+      (parameter)
+      (parameter
+        (identifier)
+        (borrow_type
+          (named_type
+            (type_identifier)))))
+    (named_type
+      (type_identifier))
+    (binary_expression
+      (field_access_expression
+        (identifier_expression
+          (identifier))
+        (identifier))
+      (field_access_expression
+        (identifier_expression
+          (identifier))
+        (identifier)))))
+
+========================================
+Pointers, borrowed parameters, effects, defaults
+========================================
+
+struct Node { value int, next ^Node? }
+internal unsafe fn touch(@owned self, bytes &[]u8, mut other Node) ^Node using [IO, Suspend] {
+    const COUNT = 4
+    @linear p := &other
+    p.^.value += 1
+    values := []int(4)
+    return &other
+}
+type Block = [4]u8
+fn display(value impl Display) string => value.to_string()
+
+---
+
+(source_file
+  (struct_declaration
+    (type_identifier)
+    (struct_body
+      (field_declaration
+        (identifier)
+        (named_type
+          (type_identifier)))
+      (field_declaration
+        (identifier)
+        (optional_type
+          (pointer_type
+            (named_type
+              (type_identifier)))))))
+  (function_declaration
+    (visibility_modifier)
+    (unsafe_modifier)
+    (identifier)
+    (parameter_list
+      (parameter
+        (decorator
+          (decorator_path
+            (identifier))))
+      (parameter
+        (identifier)
+        (borrow_type
+          (list_type
+            (named_type
+              (type_identifier)))))
+      (parameter
+        (identifier)
+        (named_type
+          (type_identifier))))
+    (pointer_type
+      (named_type
+        (type_identifier)))
+    (using_clause
+      (identifier)
+      (identifier))
+    (block
+      (const_declaration
+        (identifier)
+        (integer_literal))
+      (binding_statement
+        (decorator
+          (decorator_path
+            (identifier)))
+        (binding_pattern
+          (identifier))
+        (unary_expression
+          (identifier_expression
+            (identifier))))
+      (expression_statement
+        (assignment_expression
+          (field_access_expression
+            (dereference_expression
+              (identifier_expression
+                (identifier)))
+            (identifier))
+          (integer_literal)))
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (list_constructor
+          (named_type
+            (type_identifier))
+          (call_argument_list
+            (integer_literal))))
+      (return_statement
+        (unary_expression
+          (identifier_expression
+            (identifier))))))
+  (type_alias
+    (type_identifier)
+    (array_type
+      (integer_literal)
+      (named_type
+        (type_identifier))))
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (impl_type
+          (named_type
+            (type_identifier)))))
+    (named_type
+      (type_identifier))
+    (method_call_expression
+      (identifier_expression
+        (identifier))
+      (identifier)
+      (call_argument_list))))
+
+========================================
+String forms, nested interpolation, and nested comments
+========================================
+
+/* outer /* nested */ still outer */
+//// ordinary comment
+/// documentation
+fn text() {
+    raw := r"literal $name \n"
+    bytes := b"\xFF\x00"
+    long := """first "quoted" line
+second ${build({ value: 1 })} $name line"""
+    message := "hello ${format("inside ${name}")} $name $!"
+    large := 340282366920938463463374607431768211455u128
+}
+
+---
+
+(source_file
+  (block_comment)
+  (line_comment)
+  (doc_comment)
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (block
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (raw_string_literal))
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (byte_string_literal))
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (multiline_string_literal
+          (string_content)
+          (string_interpolation
+            (call_expression
+              (identifier_expression
+                (identifier))
+              (call_argument_list
+                (anonymous_record
+                  (struct_literal_field
+                    (identifier)
+                    (integer_literal))))))
+          (string_content)
+          (string_interpolation_ident)
+          (string_content)))
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (string_literal
+          (string_content)
+          (string_interpolation
+            (call_expression
+              (identifier_expression
+                (identifier))
+              (call_argument_list
+                (string_literal
+                  (string_content)
+                  (string_interpolation
+                    (identifier_expression
+                      (identifier)))))))
+          (string_content)
+          (string_interpolation_ident)
+          (string_content)
+          (string_content)))
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (integer_literal)))))
+
+========================================
+Models, schemas, relations, and indexes
+========================================
+
+schema Billing
+@table("bookings")
+internal model Booking {
+    id int
+    status string = "pending"
+    created_at DateTime = now()
+    BELONGS TO Customer VIA customer_id
+    HAS ONE invoice: Invoice
+    HAS MANY BookingLineItem
+    MANY TO MANY tags: Tag
+    UNIQUE INDEX (id)
+    INDEX article_search (status DESC) USING fts INCLUDE (id) WITH (config = "english") WHERE id > 0
+}
+
+---
+
+(source_file
+  (schema_declaration
+    (identifier))
+  (model_declaration
+    (decorator
+      (decorator_path
+        (identifier))
+      (argument_list
+        (string_literal
+          (string_content))))
+    (visibility_modifier)
+    (type_identifier)
+    (model_body
+      (field_declaration
+        (identifier)
+        (named_type
+          (type_identifier)))
+      (field_declaration
+        (identifier)
+        (named_type
+          (type_identifier))
+        (string_literal
+          (string_content)))
+      (field_declaration
+        (identifier)
+        (named_type
+          (type_identifier))
+        (call_expression
+          (identifier_expression
+            (identifier))
+          (call_argument_list)))
+      (relation_clause
+        (identifier)
+        (identifier))
+      (relation_clause
+        (identifier)
+        (named_type
+          (type_identifier)))
+      (relation_clause
+        (identifier))
+      (relation_clause
+        (identifier)
+        (named_type
+          (type_identifier)))
+      (index_clause
+        (identifier))
+      (index_clause
+        (identifier)
+        (identifier)
+        (identifier)
+        (identifier)
+        (identifier)
+        (string_literal
+          (string_content))
+        (binary_expression
+          (identifier_expression
+            (identifier))
+          (integer_literal))))))
+
+========================================
+Read queries, CTEs, joins, grouping, set operations
+========================================
+
+fn query() {
+    rows := FROM Booking
+        LEFT JOIN Customer ON customer.id == customer_id
+        WHERE active == true
+        GROUP BY customer_id
+        SELECT DISTINCT { customer_id, total: sum(price) }
+        HAVING total > 100
+        ORDER BY total DESC
+        LIMIT 25 OFFSET 5 AS FRAME?
+    one := ONE FROM Booking WHERE id == booking_id FOR UPDATE SKIP LOCKED?
+    tree := WITH RECURSIVE branch AS (FROM Dept) FROM branch UNION ALL FROM Dept?
+}
+
+---
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (block
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (query_expression
+          (query_source
+            (named_type
+              (type_identifier)))
+          (query_clause
+            (query_source
+              (named_type
+                (type_identifier)))
+            (binary_expression
+              (field_access_expression
+                (identifier_expression
+                  (identifier))
+                (identifier))
+              (identifier_expression
+                (identifier))))
+          (query_clause
+            (binary_expression
+              (identifier_expression
+                (identifier))
+              (boolean_literal)))
+          (query_clause
+            (identifier_expression
+              (identifier)))
+          (query_clause
+            (query_projection
+              (struct_literal_shorthand
+                (identifier))
+              (struct_literal_field
+                (identifier)
+                (call_expression
+                  (identifier_expression
+                    (identifier))
+                  (call_argument_list
+                    (identifier_expression
+                      (identifier)))))))
+          (query_clause
+            (binary_expression
+              (identifier_expression
+                (identifier))
+              (integer_literal)))
+          (query_clause
+            (query_order
+              (identifier_expression
+                (identifier))))
+          (query_clause
+            (integer_literal))
+          (query_clause
+            (integer_literal))
+          (query_clause)))
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (identifier_expression
+          (identifier)))
+      (expression_statement
+        (query_expression
+          (query_source
+            (named_type
+              (type_identifier)))
+          (query_clause
+            (binary_expression
+              (identifier_expression
+                (identifier))
+              (identifier_expression
+                (identifier))))
+          (query_clause)))
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (query_expression
+          (with_clause
+            (common_table_expression
+              (identifier)
+              (query_expression
+                (query_source
+                  (named_type
+                    (type_identifier))))))
+          (query_source
+            (named_type
+              (type_identifier)))
+          (query_clause
+            (query_expression
+              (query_source
+                (named_type
+                  (type_identifier))))))))))
+
+========================================
+Write queries and batching
+========================================
+
+fn writes() {
+    found := GET Booking(id)?
+    removed := REMOVE Booking(id) RETURNING id, status?
+    saved := SAVE Booking { id: bid, status: "paid" }?
+    batched := INSERT INTO Booking FROM bookings BATCH SIZE 500?
+    updated := UPDATE Booking SET { status: "paid" } WHERE id == bid RETURNING id?
+    deleted := DELETE FROM Booking WHERE id == bid?
+    upserted := UPSERT Booking { id: bid }?
+}
+
+---
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (block
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (query_expression
+          (query_source
+            (named_type
+              (type_identifier)))
+          (argument_list
+            (identifier_expression
+              (identifier)))))
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (query_expression
+          (query_source
+            (named_type
+              (type_identifier)))
+          (argument_list
+            (identifier_expression
+              (identifier)))
+          (query_clause
+            (identifier_expression
+              (identifier))
+            (optional_call
+              (identifier_expression
+                (identifier))))))
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (query_expression
+          (query_source
+            (named_type
+              (type_identifier)))
+          (query_projection
+            (struct_literal_field
+              (identifier)
+              (identifier_expression
+                (identifier)))
+            (struct_literal_field
+              (identifier)
+              (string_literal
+                (string_content))))))
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (query_expression
+          (query_source
+            (named_type
+              (type_identifier)))
+          (query_clause
+            (identifier_expression
+              (identifier)))
+          (query_clause
+            (optional_call
+              (integer_literal)))))
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (query_expression
+          (query_source
+            (named_type
+              (type_identifier)))
+          (query_clause
+            (query_projection
+              (struct_literal_field
+                (identifier)
+                (string_literal
+                  (string_content)))))
+          (query_clause
+            (binary_expression
+              (identifier_expression
+                (identifier))
+              (identifier_expression
+                (identifier))))
+          (query_clause
+            (optional_call
+              (identifier_expression
+                (identifier))))))
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (query_expression
+          (query_source
+            (named_type
+              (type_identifier)))
+          (query_clause
+            (binary_expression
+              (identifier_expression
+                (identifier))
+              (optional_call
+                (identifier_expression
+                  (identifier)))))))
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (query_expression
+          (query_source
+            (named_type
+              (type_identifier)))
+          (query_projection
+            (struct_literal_field
+              (identifier)
+              (identifier_expression
+                (identifier)))))))))
+
+========================================
+Windows, dialect branches, and transactions
+========================================
+
+fn analytics() {
+    rows := FROM Booking SELECT { rank: row_number() OVER (PARTITION BY customer_id ORDER BY total DESC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) }?
+    result := when Postgres { FROM Booking } else when Sqlite { FROM Booking } else { FROM Booking }
+    transaction { SAVE Booking { id: 1 }? }
+}
+
+---
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (block
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (query_expression
+          (query_source
+            (named_type
+              (type_identifier)))
+          (query_clause
+            (query_projection
+              (struct_literal_field
+                (identifier)
+                (window_expression
+                  (call_expression
+                    (identifier_expression
+                      (identifier))
+                    (call_argument_list))
+                  (identifier_expression
+                    (identifier))
+                  (query_order
+                    (identifier_expression
+                      (identifier)))
+                  (window_bound)
+                  (window_bound)))))))
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (identifier_expression
+          (identifier)))
+      (expression_statement
+        (struct_literal
+          (named_type
+            (type_identifier))
+          (struct_literal_shorthand
+            (identifier))
+          (struct_literal_shorthand
+            (identifier))))
+      (expression_statement
+        (identifier_expression
+          (identifier)))
+      (expression_statement
+        (dialect_query
+          (identifier)
+          (identifier)
+          (block
+            (expression_statement
+              (query_expression
+                (query_source
+                  (named_type
+                    (type_identifier))))))
+          (block
+            (expression_statement
+              (query_expression
+                (query_source
+                  (named_type
+                    (type_identifier))))))))
+      (expression_statement
+        (transaction_expression
+          (block
+            (expression_statement
+              (query_expression
+                (query_source
+                  (named_type
+                    (type_identifier)))
+                (query_projection
+                  (struct_literal_field
+                    (identifier)
+                    (integer_literal)))))))))))
+
+========================================
+Mutable loops, consuming loops, select, anonymous records
+========================================
+
+fn control(items []int, task Task[int]) {
+    for mut x in items { x += 1 }
+    for Some(value) := next() { println(value) }
+    record := { x: 1, y: 2 }
+    is_other := record is not Point
+    select { value := task => println(value), default => println("idle") }
+    match { true => 1, false => 0 }
+}
+
+---
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (list_type
+          (named_type
+            (type_identifier))))
+      (parameter
+        (identifier)
+        (generic_type
+          (named_type
+            (type_identifier))
+          (generic_arguments
+            (named_type
+              (type_identifier))))))
+    (block
+      (expression_statement
+        (for_expression
+          (mutable_pattern
+            (binding_pattern
+              (identifier)))
+          (identifier_expression
+            (identifier))
+          (block
+            (expression_statement
+              (assignment_expression
+                (identifier_expression
+                  (identifier))
+                (integer_literal))))))
+      (expression_statement
+        (for_expression
+          (variant_pattern
+            (named_type
+              (type_identifier))
+            (binding_pattern
+              (identifier)))
+          (call_expression
+            (identifier_expression
+              (identifier))
+            (call_argument_list))
+          (block
+            (expression_statement
+              (call_expression
+                (identifier_expression
+                  (identifier))
+                (call_argument_list
+                  (identifier_expression
+                    (identifier))))))))
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (anonymous_record
+          (struct_literal_field
+            (identifier)
+            (integer_literal))
+          (struct_literal_field
+            (identifier)
+            (integer_literal))))
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (binary_expression
+          (identifier_expression
+            (identifier))
+          (identifier_expression
+            (identifier))))
+      (expression_statement
+        (select_expression
+          (select_arm
+            (binding_pattern
+              (identifier))
+            (identifier_expression
+              (identifier))
+            (call_expression
+              (identifier_expression
+                (identifier))
+              (call_argument_list
+                (identifier_expression
+                  (identifier)))))
+          (select_arm
+            (call_expression
+              (identifier_expression
+                (identifier))
+              (call_argument_list
+                (string_literal
+                  (string_content)))))))
+      (expression_statement
+        (match_expression
+          (match_arm
+            (literal_pattern
+              (boolean_literal))
+            (integer_literal))
+          (match_arm
+            (literal_pattern
+              (boolean_literal))
+            (integer_literal)))))))
+
+========================================
+Indexing, empty lists, tuple fields, catch, and trailing closures
+========================================
+
+error Failure = IOError | ParseError
+trait Iterable { type Item }
+fn use(self, table Map[string, int]) ! Failure {
+    mut out: List[string] = []
+    n := arg_count()
+    table["key"] = n
+    value := self.get((self.len - 1).to_usize())
+    point := geo.Point { lat: 1, lon: 2 }
+    result := parse() catch { Err(_) => return (), Ok(x) => x }
+    name := items.map { item => item.name }.collect()
+    match self.fault { Fault.Clean => true, _ => false }
+    pair := (1, 2)
+    return pair.0
+}
+
+---
+
+(source_file
+  (error_declaration
+    (type_identifier)
+    (union_type
+      (named_type
+        (type_identifier))
+      (named_type
+        (type_identifier))))
+  (trait_declaration
+    (type_identifier)
+    (trait_body
+      (type_alias
+        (type_identifier))))
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter)
+      (parameter
+        (identifier)
+        (generic_type
+          (named_type
+            (type_identifier))
+          (generic_arguments
+            (named_type
+              (type_identifier))
+            (named_type
+              (type_identifier))))))
+    (named_type
+      (type_identifier))
+    (block
+      (binding_statement
+        (identifier)
+        (generic_type
+          (named_type
+            (type_identifier))
+          (generic_arguments
+            (named_type
+              (type_identifier))))
+        (list_expression))
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (call_expression
+          (identifier_expression
+            (identifier))
+          (call_argument_list)))
+      (expression_statement
+        (assignment_expression
+          (index_expression
+            (identifier_expression
+              (identifier))
+            (string_literal
+              (string_content)))
+          (identifier_expression
+            (identifier))))
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (method_call_expression
+          (identifier_expression
+            (identifier))
+          (identifier)
+          (call_argument_list
+            (method_call_expression
+              (parenthesized_expression
+                (binary_expression
+                  (field_access_expression
+                    (identifier_expression
+                      (identifier))
+                    (identifier))
+                  (integer_literal)))
+              (identifier)
+              (call_argument_list)))))
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (field_access_expression
+          (identifier_expression
+            (identifier))
+          (identifier)))
+      (expression_statement
+        (anonymous_record
+          (struct_literal_field
+            (identifier)
+            (integer_literal))
+          (struct_literal_field
+            (identifier)
+            (integer_literal))))
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (catch_expression
+          (call_expression
+            (identifier_expression
+              (identifier))
+            (call_argument_list))
+          (match_arm
+            (variant_pattern
+              (named_type
+                (type_identifier))
+              (wildcard_pattern))
+            (return_statement
+              (unit_expression)))
+          (match_arm
+            (variant_pattern
+              (named_type
+                (type_identifier))
+              (binding_pattern
+                (identifier)))
+            (identifier_expression
+              (identifier)))))
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (method_call_expression
+          (trailing_closure_call
+            (field_access_expression
+              (identifier_expression
+                (identifier))
+              (identifier))
+            (trailing_closure
+              (identifier)
+              (expression_statement
+                (field_access_expression
+                  (identifier_expression
+                    (identifier))
+                  (identifier)))))
+          (identifier)
+          (call_argument_list)))
+      (expression_statement
+        (match_expression
+          (field_access_expression
+            (identifier_expression
+              (identifier))
+            (identifier))
+          (match_arm
+            (variant_pattern
+              (qualified_type
+                (named_type
+                  (type_identifier))
+                (named_type
+                  (type_identifier))))
+            (boolean_literal))
+          (match_arm
+            (wildcard_pattern)
+            (boolean_literal))))
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (tuple_expression
+          (integer_literal)
+          (integer_literal)))
+      (return_statement
+        (field_access_expression
+          (identifier_expression
+            (identifier))
+          (integer_literal))))))
+
+========================================
+Datasource routing, UPSERT keys, and query composition
+========================================
+
+fn reports() {
+    report REPLICA := FROM Booking WHERE active == true?
+    saved := UPSERT DailyStat ON date, routeId FROM stats { date: it.date, bookingCount: bookingCount + it.count }?
+    recent := active_bookings() WHERE total > 10 ORDER BY total DESC LIMIT 5?
+}
+
+---
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (block
+      (query_binding_statement
+        (variant_pattern
+          (named_type
+            (type_identifier)))
+        (identifier)
+        (query_expression
+          (query_source
+            (named_type
+              (type_identifier)))
+          (query_clause
+            (binary_expression
+              (identifier_expression
+                (identifier))
+              (optional_call
+                (boolean_literal))))))
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (query_expression
+          (query_source
+            (named_type
+              (type_identifier)))
+          (query_clause
+            (identifier)
+            (identifier))
+          (query_clause
+            (optional_call
+              (struct_literal
+                (named_type
+                  (type_identifier))
+                (struct_literal_field
+                  (identifier)
+                  (field_access_expression
+                    (identifier_expression
+                      (identifier))
+                    (identifier)))
+                (struct_literal_field
+                  (identifier)
+                  (binary_expression
+                    (identifier_expression
+                      (identifier))
+                    (field_access_expression
+                      (identifier_expression
+                        (identifier))
+                      (identifier)))))))))
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (query_continuation
+          (call_expression
+            (identifier_expression
+              (identifier))
+            (call_argument_list))
+          (query_clause
+            (binary_expression
+              (identifier_expression
+                (identifier))
+              (integer_literal)))
+          (query_clause
+            (query_order
+              (identifier_expression
+                (identifier))))
+          (query_clause
+            (optional_call
+              (integer_literal))))))))

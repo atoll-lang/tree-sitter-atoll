@@ -23,6 +23,11 @@
   "fn" @context
   name: (identifier) @name) @item
 
+(message_declaration
+  (decorator name: (decorator_path) @annotation)*
+  keyword: (identifier) @context
+  name: (identifier) @name) @item
+
 (struct_declaration
   (decorator name: (decorator_path) @annotation)*
   "struct" @context
@@ -67,6 +72,20 @@
 (module_declaration
   "module" @context
   path: (module_path) @name) @item
+
+(model_declaration
+  (decorator name: (decorator_path) @annotation)*
+  "model" @context
+  name: (type_identifier) @name) @item
+
+(schema_declaration
+  "schema" @context
+  name: (identifier) @name) @item
+
+(test_item
+  skip: (identifier)? @context
+  kind: (identifier) @context
+  name: (string_literal) @name) @item
 
 ; ── Members within enum bodies ───────────────────────────────────
 

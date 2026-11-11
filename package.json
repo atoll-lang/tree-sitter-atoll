@@ -1,19 +1,31 @@
 {
   "name": "tree-sitter-atoll",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Tree-sitter grammar for the Atoll language",
   "main": "bindings/node",
-  "keywords": ["parser", "tree-sitter", "atoll"],
+  "keywords": [
+    "parser",
+    "tree-sitter",
+    "atoll"
+  ],
   "author": "Workreef",
   "license": "Apache-2.0",
   "tree-sitter": [
     {
       "scope": "source.atoll",
-      "file-types": ["at"],
-      "highlights": ["queries/highlights.scm"]
+      "file-types": [
+        "at"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
+      ]
     }
   ],
   "devDependencies": {
     "tree-sitter-cli": "^0.25.10"
+  },
+  "scripts": {
+    "generate": "tree-sitter generate",
+    "test": "tree-sitter test"
   }
 }
