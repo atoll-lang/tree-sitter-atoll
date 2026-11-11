@@ -187,6 +187,7 @@
 [ "(" ")" "{" "}" "[" "]" ] @punctuation.bracket
 (call_type_open) @punctuation.bracket
 (struct_type_open) @punctuation.bracket
+(string_interpolation "${" @punctuation.special "}" @punctuation.special)
 [ "," ";" ":" "::" "." "@" ] @punctuation.delimiter
 
 ; ─── Decorators ───────────────────────────────────────────────────
