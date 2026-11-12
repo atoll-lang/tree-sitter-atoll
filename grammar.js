@@ -103,6 +103,14 @@ module.exports = grammar({
     [$._control_expression, $.match_arm],
     [$.bare_tuple_expression, $._value_expression],
     [$.bare_tuple_expression, $.trailing_closure_call],
+    [$.markup_element, $.named_type, $.identifier_expression],
+    [$.markup_path, $.named_type, $.identifier_expression],
+    [$.markup_element, $.markup_field_shorthand],
+    [$.markup_field, $.trailing_closure_call],
+    [$.named_type, $.trailing_closure, $.binding_pattern],
+    [$.markup_match_arm, $.trailing_closure_call],
+    [$._statement, $._control_expression],
+    [$._control_expression, $.select_arm],
   ],
 
   supertypes: $ => [
@@ -126,8 +134,10 @@ module.exports = grammar({
       $.import_declaration,
       $.test_item,
       $.message_declaration,
+      $.component_declaration,
       $.const_declaration,
       $.function_declaration,
+      $.service_declaration,
       $.struct_declaration,
       $.enum_declaration,
       $.error_declaration,
@@ -163,10 +173,134 @@ module.exports = grammar({
 
     message_declaration: $ => seq(
       repeat(choice($.decorator, $.visibility_modifier, $.unsafe_modifier)),
-      field('keyword', $.identifier),
+      'message',
       field('name', $.identifier),
       field('parameters', $.parameter_list),
       field('body', $.message_body),
+    ),
+
+    // ── UI components ─────────────────────────────────────────────
+    //
+    // `component Name(props) { statements view }` (UI-COMPONENTS.md).
+    // `component` is contextual in the compiler, but it is a literal here
+    // so it cannot be confused with `message`, whose head has the same
+    // shape. Inside a body the view is a markup element: an element name
+    // and a brace holding fields, child elements, text, and control flow.
+
+    component_declaration: $ => seq(
+      repeat(choice($.decorator, $.visibility_modifier, $.unsafe_modifier)),
+      'component',
+      field('name', alias($.identifier, $.type_identifier)),
+      field('props', $.component_props),
+      field('body', $.component_body),
+    ),
+
+    component_props: $ => seq(
+      '(',
+      sepBy(',', $.component_prop),
+      optional(','),
+      ')',
+    ),
+
+    component_prop: $ => seq(
+      field('name', $.identifier),
+      field('type', $._type),
+      optional(seq('=', field('default', $._expression))),
+    ),
+
+    component_body: $ => seq(
+      '{',
+      repeat($._statement),
+      field('view', $.markup_element),
+      '}',
+    ),
+
+    // An element: `div { … }`, `View { … }`, `Card { … }`, `kit.Card { … }`.
+    markup_element: $ => prec.dynamic(2, seq(
+      field('name', choice($.identifier, $.markup_path)),
+      '{',
+      repeat($.markup_item),
+      '}',
+    )),
+
+    markup_path: $ => prec.left(seq(
+      $.identifier,
+      repeat1(seq('.', $.identifier)),
+    )),
+
+    markup_item: $ => seq(
+      choice(
+        $.markup_field,
+        $.markup_field_shorthand,
+        $.markup_element,
+        $.markup_text,
+        $.markup_hole,
+        $.markup_if,
+        $.markup_for,
+        $.markup_match,
+      ),
+      optional(','),
+    ),
+
+    markup_field: $ => seq(
+      field('name', $.identifier),
+      ':',
+      field('value', $._expression),
+    ),
+
+    markup_field_shorthand: $ => $.identifier,
+
+    markup_text: $ => choice(
+      $.string_literal,
+      $.multiline_string_literal,
+    ),
+
+    markup_hole: $ => seq(
+      '{',
+      field('value', $._expression),
+      '}',
+    ),
+
+    markup_if: $ => prec.dynamic(2, seq(
+      'if',
+      field('condition', $._expression),
+      '{',
+      repeat($.markup_item),
+      '}',
+      optional(seq('else', choice($.markup_if, seq('{', repeat($.markup_item), '}')))),
+    )),
+
+    markup_for: $ => prec.dynamic(2, seq(
+      'for',
+      field('binding', $._for_binding),
+      'in',
+      field('iter', $._expression),
+      '{',
+      repeat($.markup_item),
+      '}',
+    )),
+
+    markup_match: $ => prec.dynamic(2, seq(
+      'match',
+      field('scrutinee', $._expression),
+      '{',
+      repeat($.markup_match_arm),
+      '}',
+    )),
+
+    markup_match_arm: $ => seq(
+      field('pattern', $._pattern),
+      optional(seq('if', field('guard', $._expression))),
+      '=>',
+      field('body', choice(
+        $.markup_element,
+        $.markup_if,
+        $.markup_for,
+        $.markup_match,
+        $.markup_text,
+        $.markup_hole,
+      )),
+      optional(','),
     ),
 
     message_body: $ => seq(
@@ -359,6 +493,15 @@ module.exports = grammar({
     ),
 
     // ── Struct ───────────────────────────────────────────────────
+
+    service_declaration: $ => seq(
+      repeat(choice($.decorator, $.visibility_modifier, $.unsafe_modifier)),
+      'service',
+      field('name', alias($.identifier, $.type_identifier)),
+      optional(field('type_parameters', $.generic_parameters)),
+      optional(field('where_clause', $.where_clause)),
+      field('body', $.struct_body),
+    ),
 
     struct_declaration: $ => seq(
       repeat(choice($.decorator, $.visibility_modifier, $.unsafe_modifier)),
@@ -861,6 +1004,10 @@ module.exports = grammar({
       $.unit_expression,
       $.catch_expression,
       $.error_expression,
+      $.return_statement,
+      $.break_statement,
+      $.continue_statement,
+      $.yield_statement,
     ),
 
     identifier_expression: $ => choice($.identifier, alias('self', $.identifier)),

@@ -44,7 +44,6 @@ fn take(p &mut Node, q &T) ^Node? using [IO] where T: Display {
     (block))
   (message_declaration
     (identifier)
-    (identifier)
     (parameter_list
       (parameter
         (identifier)
@@ -246,3 +245,97 @@ fn q() void {
             (identifier))
           (struct_literal_shorthand
             (identifier)))))))
+
+========================================
+UI components and markup
+========================================
+
+component Counter(label string, step int = 1) {
+    mut count := 0
+
+    div {
+        class: "counter"
+        h1 { "${label}: ${count}" }
+        button { on_click: () => { count += step }, "+${step}" }
+        if count > 5 {
+            p { "plenty" }
+        }
+    }
+}
+
+---
+
+(source_file
+  (component_declaration
+    (type_identifier)
+    (component_props
+      (component_prop
+        (identifier)
+        (named_type
+          (type_identifier)))
+      (component_prop
+        (identifier)
+        (named_type
+          (type_identifier))
+        (integer_literal)))
+    (component_body
+      (binding_statement
+        (mutable_pattern
+          (binding_pattern
+            (identifier)))
+        (integer_literal))
+      (markup_element
+        (identifier)
+        (markup_item
+          (markup_field
+            (identifier)
+            (string_literal
+              (string_content))))
+        (markup_item
+          (markup_element
+            (identifier)
+            (markup_item
+              (markup_text
+                (string_literal
+                  (string_interpolation
+                    (identifier_expression
+                      (identifier)))
+                  (string_content)
+                  (string_interpolation
+                    (identifier_expression
+                      (identifier))))))))
+        (markup_item
+          (markup_element
+            (identifier)
+            (markup_item
+              (markup_field
+                (identifier)
+                (lambda_expression
+                  (lambda_parameters)
+                  (block
+                    (expression_statement
+                      (assignment_expression
+                        (identifier_expression
+                          (identifier))
+                        (identifier_expression
+                          (identifier))))))))
+            (markup_item
+              (markup_text
+                (string_literal
+                  (string_content)
+                  (string_interpolation
+                    (identifier_expression
+                      (identifier))))))))
+        (markup_item
+          (markup_if
+            (binary_expression
+              (identifier_expression
+                (identifier))
+              (integer_literal))
+            (markup_item
+              (markup_element
+                (identifier)
+                (markup_item
+                  (markup_text
+                    (string_literal
+                      (string_content))))))))))))

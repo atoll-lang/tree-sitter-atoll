@@ -25,8 +25,18 @@
 
 (message_declaration
   (decorator name: (decorator_path) @annotation)*
-  keyword: (identifier) @context
+  "message" @context
   name: (identifier) @name) @item
+
+(component_declaration
+  (decorator name: (decorator_path) @annotation)*
+  "component" @context
+  name: (type_identifier) @name) @item
+
+(service_declaration
+  (decorator name: (decorator_path) @annotation)*
+  "service" @context
+  name: (type_identifier) @name) @item
 
 (struct_declaration
   (decorator name: (decorator_path) @annotation)*

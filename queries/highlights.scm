@@ -53,6 +53,9 @@
   "unsafe"
   "model"
   "schema"
+  "message"
+  "component"
+  "service"
 ] @keyword
 
 [
@@ -97,10 +100,6 @@
 ((test_item
    kind: (identifier) @keyword)
  (#match? @keyword "^(test|bench)$"))
-
-((message_declaration
-   keyword: (identifier) @keyword)
- (#eq? @keyword "message"))
 
 ((message_line
    draft: (identifier) @keyword)
@@ -200,6 +199,14 @@
 
 (function_declaration name: (identifier) @function)
 (message_declaration name: (identifier) @function)
+(component_declaration
+  "component" @keyword
+  name: (type_identifier) @type)
+(service_declaration
+  "service" @keyword
+  name: (type_identifier) @type)
+(component_prop
+  name: (identifier) @variable.parameter)
 (const_declaration name: (identifier) @constant)
 (trait_const_declaration name: (identifier) @constant)
 (struct_declaration name: (type_identifier) @type)
@@ -314,6 +321,30 @@
 (variant_pattern type: (named_type (type_identifier) @variant))
 (pointer_variant_pattern type: (named_type (type_identifier) @variant))
 (typed_member_pattern type: (_) @type)
+
+; ─── Markup (UI components) ──────────────────────────────────────
+
+; A lowercase element name is an HTML tag; a PascalCase one is a
+; portable element or a component.
+((markup_element
+   name: (identifier) @tag)
+ (#match? @tag "^[a-z]"))
+
+((markup_element
+   name: (identifier) @type)
+ (#match? @type "^[A-Z]"))
+
+((markup_element
+   name: (identifier) @type.builtin)
+ (#match? @type.builtin "^(View|Text|Button|Image|Input|Scroll)$"))
+
+(markup_path (identifier) @type)
+
+(markup_field
+  name: (identifier) @property)
+
+(markup_field_shorthand
+  (identifier) @variable)
 
 ; ─── Loop labels ──────────────────────────────────────────────────
 
