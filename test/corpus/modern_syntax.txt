@@ -443,3 +443,41 @@ fn f(was []bool, i int) int {
               (integer_literal)))))
       (return_statement
         (integer_literal)))))
+
+========================================
+Service declaration
+========================================
+
+service Greeter {
+    prefix string
+
+    fn greet(name string) string {
+        return self.prefix
+    }
+}
+
+---
+
+(source_file
+  (service_declaration
+    (type_identifier)
+    (struct_body
+      (field_declaration
+        (identifier)
+        (named_type
+          (type_identifier)))
+      (function_declaration
+        (identifier)
+        (parameter_list
+          (parameter
+            (identifier)
+            (named_type
+              (type_identifier))))
+        (named_type
+          (type_identifier))
+        (block
+          (return_statement
+            (field_access_expression
+              (identifier_expression
+                (identifier))
+              (identifier))))))))
