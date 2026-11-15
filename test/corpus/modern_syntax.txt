@@ -401,3 +401,45 @@ fn f(b string?) string {
           (identifier_expression
             (identifier))
           (string_literal))))))
+
+========================================
+Index then a block in a control-flow head
+========================================
+
+fn f(was []bool, i int) int {
+    if was[i] {
+        return 1
+    }
+    return 0
+}
+
+---
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (list_type
+          (named_type
+            (type_identifier))))
+      (parameter
+        (identifier)
+        (named_type
+          (type_identifier))))
+    (named_type
+      (type_identifier))
+    (block
+      (expression_statement
+        (if_expression
+          (index_expression
+            (identifier_expression
+              (identifier))
+            (identifier_expression
+              (identifier)))
+          (block
+            (return_statement
+              (integer_literal)))))
+      (return_statement
+        (integer_literal)))))

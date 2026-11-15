@@ -18,6 +18,45 @@ void tree_sitter_atoll_external_scanner_deserialize(void *payload, const char *b
   (void)payload; (void)buffer; (void)length;
 }
 
+static bool scan_ident_start(int c) {
+  return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
+}
+
+static bool scan_ident_continue(int c) {
+  return scan_ident_start(c) || (c >= '0' && c <= '9');
+}
+
+static void scan_skip_space(TSLexer *lexer) {
+  while (lexer->lookahead == ' ' || lexer->lookahead == '\t' ||
+         lexer->lookahead == '\r' || lexer->lookahead == '\n') {
+    lexer->advance(lexer, false);
+  }
+}
+
+/// After `Name[T]`, is the brace a struct literal's field list rather than
+/// a block? The compiler makes the same call in `is_struct_literal_start`:
+/// `{}`, `{ name: … }`, `{ name, … }`, `{ name }`, or `{ ..base }`. A
+/// control-flow head such as `if arr[i] {` has a statement list instead,
+/// and must stay an index followed by the body.
+static bool scan_struct_body(TSLexer *lexer) {
+  lexer->advance(lexer, false); // the `{`
+  scan_skip_space(lexer);
+  if (lexer->lookahead == '}') return true;
+  if (lexer->lookahead == '.') {
+    lexer->advance(lexer, false);
+    return lexer->lookahead == '.';
+  }
+  if (!scan_ident_start(lexer->lookahead)) return false;
+  while (scan_ident_continue(lexer->lookahead)) lexer->advance(lexer, false);
+  scan_skip_space(lexer);
+  if (lexer->lookahead == ',') return true;
+  if (lexer->lookahead == '}') return true;
+  if (lexer->lookahead != ':') return false;
+  lexer->advance(lexer, false);
+  // `:=` and `::` are not a field separator.
+  return lexer->lookahead != '=' && lexer->lookahead != ':';
+}
+
 /// The `[` of a generic call's or a typed struct literal's arguments:
 /// `Name[T](…)` or `Name[T] { … }`. It is the same character an index
 /// opens with, so the two are told apart by what follows the matching
@@ -45,7 +84,7 @@ static bool scan_type_open(TSLexer *lexer, bool call, bool structure) {
     lexer->result_symbol = CALL_TYPE_OPEN;
     return true;
   }
-  if (structure && lexer->lookahead == '{') {
+  if (structure && lexer->lookahead == '{' && scan_struct_body(lexer)) {
     lexer->result_symbol = STRUCT_TYPE_OPEN;
     return true;
   }
