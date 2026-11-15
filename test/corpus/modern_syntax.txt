@@ -339,3 +339,65 @@ component Counter(label string, step int = 1) {
                   (markup_text
                     (string_literal
                       (string_content))))))))))))
+
+========================================
+Empty strings after coalesce
+========================================
+
+fn f(b string?) string {
+    a := b ?? ""
+    c := "x${b ?? ""}y"
+    d := Pair { s: b ?? "" }
+    return b ?? ""
+}
+
+---
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (optional_type
+          (named_type
+            (type_identifier)))))
+    (named_type
+      (type_identifier))
+    (block
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (binary_expression
+          (identifier_expression
+            (identifier))
+          (string_literal)))
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (string_literal
+          (string_content)
+          (string_interpolation
+            (binary_expression
+              (identifier_expression
+                (identifier))
+              (string_literal)))
+          (string_content)))
+      (binding_statement
+        (binding_pattern
+          (identifier))
+        (identifier_expression
+          (identifier)))
+      (expression_statement
+        (anonymous_record
+          (struct_literal_field
+            (identifier)
+            (binary_expression
+              (identifier_expression
+                (identifier))
+              (string_literal)))))
+      (return_statement
+        (binary_expression
+          (identifier_expression
+            (identifier))
+          (string_literal))))))
