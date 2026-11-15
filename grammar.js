@@ -35,7 +35,7 @@ module.exports = grammar({
 
   word: $ => $.identifier,
 
-  externals: $ => [$.block_comment, $._multiline_string_content, $.call_type_open, $.struct_type_open, $._error_sentinel],
+  externals: $ => [$.block_comment, $._multiline_string_content, $.call_type_open, $.struct_type_open, $._same_line, $._error_sentinel],
 
   extras: $ => [
     /\s/,
@@ -899,16 +899,20 @@ module.exports = grammar({
       )),
     )),
 
+    // A value after `return`, `break`, or `yield` must start on the same
+    // line: the compiler's `expr_follows` reads a fresh-line token as the
+    // next statement. `_same_line` is a zero-width external token that
+    // fails when a newline comes before the value.
     return_statement: $ => prec.right(seq(
       'return',
-      optional(field('value', $._value_expression)),
+      optional(seq($._same_line, field('value', $._value_expression))),
       optional(';'),
     )),
 
     break_statement: $ => prec.right(seq(
       'break',
       optional(field('label', $.label)),
-      optional(field('value', $._expression)),
+      optional(seq($._same_line, field('value', $._expression))),
       optional(';'),
     )),
 
@@ -920,7 +924,7 @@ module.exports = grammar({
 
     yield_statement: $ => prec.right(seq(
       'yield',
-      optional(field('value', $._expression)),
+      optional(seq($._same_line, field('value', $._expression))),
       optional(';'),
     )),
 

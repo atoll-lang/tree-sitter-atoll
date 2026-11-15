@@ -6,6 +6,7 @@ enum TokenType {
   MULTILINE_STRING_CONTENT,
   CALL_TYPE_OPEN,
   STRUCT_TYPE_OPEN,
+  SAME_LINE,
   ERROR_SENTINEL
 };
 
@@ -16,6 +17,51 @@ unsigned tree_sitter_atoll_external_scanner_serialize(void *payload, char *buffe
 }
 void tree_sitter_atoll_external_scanner_deserialize(void *payload, const char *buffer, unsigned length) {
   (void)payload; (void)buffer; (void)length;
+}
+
+/// A zero-width token that succeeds only when the next token is on the
+/// same line. `return`/`break`/`yield` use it to keep a fresh-line token
+/// from being read as their value: the compiler's `expr_follows` does the
+/// same. Comments are looked through, but a newline inside one fails.
+static bool scan_same_line(TSLexer *lexer) {
+  lexer->mark_end(lexer);
+  for (;;) {
+    while (lexer->lookahead == ' ' || lexer->lookahead == '\t' ||
+           lexer->lookahead == '\r') {
+      lexer->advance(lexer, false);
+    }
+    if (lexer->lookahead == '\n' || lexer->eof(lexer)) return false;
+    if (lexer->lookahead == '}') return false;
+    if (lexer->lookahead == ')') return false;
+    if (lexer->lookahead == ']') return false;
+    if (lexer->lookahead == ',') return false;
+    if (lexer->lookahead == ';') return false;
+    if (lexer->lookahead != '/') return true;
+    lexer->advance(lexer, false);
+    if (lexer->lookahead == '/') return false;
+    if (lexer->lookahead != '*') return true;
+    lexer->advance(lexer, false);
+    unsigned depth = 1;
+    while (depth && !lexer->eof(lexer)) {
+      if (lexer->lookahead == '\n') return false;
+      if (lexer->lookahead == '/') {
+        lexer->advance(lexer, false);
+        if (lexer->lookahead == '*') {
+          lexer->advance(lexer, false);
+          depth++;
+        }
+      } else if (lexer->lookahead == '*') {
+        lexer->advance(lexer, false);
+        if (lexer->lookahead == '/') {
+          lexer->advance(lexer, false);
+          depth--;
+        }
+      } else {
+        lexer->advance(lexer, false);
+      }
+    }
+    if (depth != 0) return false;
+  }
 }
 
 static bool scan_ident_start(int c) {
@@ -96,6 +142,12 @@ bool tree_sitter_atoll_external_scanner_scan(void *payload, TSLexer *lexer, cons
   // All external tokens are valid during error recovery. Do not consume the
   // rest of an incomplete file as multiline string content in that state.
   if (valid_symbols[ERROR_SENTINEL]) return false;
+
+  if (valid_symbols[SAME_LINE]) {
+    if (!scan_same_line(lexer)) return false;
+    lexer->result_symbol = SAME_LINE;
+    return true;
+  }
 
   if (valid_symbols[CALL_TYPE_OPEN] || valid_symbols[STRUCT_TYPE_OPEN]) {
     if (scan_type_open(lexer, valid_symbols[CALL_TYPE_OPEN], valid_symbols[STRUCT_TYPE_OPEN])) return true;

@@ -481,3 +481,52 @@ service Greeter {
               (identifier_expression
                 (identifier))
               (identifier))))))))
+
+========================================
+Coalesce with a fresh-line return
+========================================
+
+fn f(c task.Stream[Event]) void {
+    for {
+        e := c.recv() ?? return
+        next()
+    }
+}
+
+---
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (qualified_type
+          (named_type
+            (type_identifier))
+          (named_type
+            (type_identifier))
+          (generic_arguments
+            (named_type
+              (type_identifier))))))
+    (named_type
+      (type_identifier))
+    (block
+      (expression_statement
+        (for_expression
+          (block
+            (binding_statement
+              (binding_pattern
+                (identifier))
+              (binary_expression
+                (method_call_expression
+                  (identifier_expression
+                    (identifier))
+                  (identifier)
+                  (call_argument_list))
+                (return_statement)))
+            (expression_statement
+              (call_expression
+                (identifier_expression
+                  (identifier))
+                (call_argument_list)))))))))
