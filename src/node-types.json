@@ -262,6 +262,10 @@
         "named": true
       },
       {
+        "type": "theme_declaration",
+        "named": true
+      },
+      {
         "type": "trait_declaration",
         "named": true
       },
@@ -5848,6 +5852,77 @@
     }
   },
   {
+    "type": "theme_declaration",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "theme_role",
+          "named": true
+        },
+        {
+          "type": "theme_scheme",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "theme_role",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      },
+      "value": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "_expression",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "theme_scheme",
+    "named": true,
+    "fields": {
+      "scheme": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "theme_role",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "trailing_closure",
     "named": true,
     "fields": {
@@ -7443,6 +7518,10 @@
   {
     "type": "struct_type_open",
     "named": true
+  },
+  {
+    "type": "theme",
+    "named": false
   },
   {
     "type": "trait",

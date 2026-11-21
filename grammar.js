@@ -138,6 +138,7 @@ module.exports = grammar({
       $.test_item,
       $.message_declaration,
       $.component_declaration,
+      $.theme_declaration,
       $.const_declaration,
       $.function_declaration,
       $.service_declaration,
@@ -197,6 +198,30 @@ module.exports = grammar({
       field('props', $.component_props),
       // None for a portable element the host draws (`std/ui`'s elements).
       optional(field('body', $.component_body)),
+    ),
+
+    // `theme { … }`: the program's theme (UI-COMPONENTS.md section 14).
+    // Each role is `name: value` in a style's spelling; one in `light { … }`
+    // or `dark { … }` holds in that scheme, one outside them in both.
+    // `theme` is a word only here, at the top of a file before `{`.
+    theme_declaration: $ => seq(
+      'theme',
+      '{',
+      repeat(seq(choice($.theme_role, $.theme_scheme), optional(','))),
+      '}',
+    ),
+
+    theme_scheme: $ => seq(
+      field('scheme', $.identifier),
+      '{',
+      repeat(seq($.theme_role, optional(','))),
+      '}',
+    ),
+
+    theme_role: $ => seq(
+      field('name', $.identifier),
+      ':',
+      field('value', $._expression),
     ),
 
     component_props: $ => seq(

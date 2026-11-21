@@ -247,3 +247,89 @@ pub component Input(
         (identifier)
         (named_type
           (type_identifier))))))
+
+========================================
+A theme, its roles and its schemes
+========================================
+
+theme {
+    radius: 10
+    scrim: .hex(0x000000).alpha(0.45)
+    light {
+        primary: .hex(0xc6ef6a)
+        card_shadow: { y: 1, color: .foreground.alpha(0.04) }
+        field_shadow: .none
+    }
+    dark {
+        primary: .hex(0xc4ec6a), raised_shadow: [{ spread: 1, inset: true }, { y: 1 }]
+    }
+}
+
+---
+
+(source_file
+  (theme_declaration
+    (theme_role
+      (identifier)
+      (integer_literal))
+    (theme_role
+      (identifier)
+      (method_call_expression
+        (call_expression
+          (implicit_member_expression
+            (identifier))
+          (call_argument_list
+            (integer_literal)))
+        (identifier)
+        (call_argument_list
+          (float_literal))))
+    (theme_scheme
+      (identifier)
+      (theme_role
+        (identifier)
+        (call_expression
+          (implicit_member_expression
+            (identifier))
+          (call_argument_list
+            (integer_literal))))
+      (theme_role
+        (identifier)
+        (anonymous_record
+          (struct_literal_field
+            (identifier)
+            (integer_literal))
+          (struct_literal_field
+            (identifier)
+            (method_call_expression
+              (implicit_member_expression
+                (identifier))
+              (identifier)
+              (call_argument_list
+                (float_literal))))))
+      (theme_role
+        (identifier)
+        (implicit_member_expression
+          (identifier))))
+    (theme_scheme
+      (identifier)
+      (theme_role
+        (identifier)
+        (call_expression
+          (implicit_member_expression
+            (identifier))
+          (call_argument_list
+            (integer_literal))))
+      (theme_role
+        (identifier)
+        (list_expression
+          (anonymous_record
+            (struct_literal_field
+              (identifier)
+              (integer_literal))
+            (struct_literal_field
+              (identifier)
+              (boolean_literal)))
+          (anonymous_record
+            (struct_literal_field
+              (identifier)
+              (integer_literal))))))))

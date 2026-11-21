@@ -326,6 +326,12 @@
 ((import_items (identifier) @type)
  (#match? @type "^[A-Z]"))
 
+; ─── Theme ───────────────────────────────────────────────────────
+
+(theme_declaration "theme" @keyword)
+(theme_scheme scheme: (identifier) @attribute)
+(theme_role name: (identifier) @property)
+
 ; ─── Markup (UI components) ──────────────────────────────────────
 
 ; A lowercase element name is an HTML tag; a PascalCase one is a
