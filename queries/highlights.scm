@@ -346,6 +346,15 @@
 (markup_field_shorthand
   (identifier) @variable)
 
+; `when hovered { … }`: a state the host applies.
+(markup_when
+  "when" @keyword
+  state: (identifier) @attribute)
+
+; A member of the expected type after a leading dot: `.row`, `.primary`.
+(implicit_member_expression
+  member: (identifier) @constant)
+
 ; ─── Loop labels ──────────────────────────────────────────────────
 
 (for_expression label: (label) @label)

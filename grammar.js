@@ -238,12 +238,23 @@ module.exports = grammar({
         $.markup_if,
         $.markup_for,
         $.markup_match,
+        $.markup_when,
       ),
       optional(','),
     ),
 
+    // Style fields the host applies in a state it owns:
+    // `when hovered { background: .accent }`. It holds fields alone.
+    markup_when: $ => seq(
+      'when',
+      field('state', $.identifier),
+      '{',
+      repeat(seq($.markup_field, optional(','))),
+      '}',
+    ),
+
     markup_field: $ => seq(
-      field('name', $.identifier),
+      field('name', memberName($)),
       ':',
       field('value', $._expression),
     ),
@@ -973,6 +984,7 @@ module.exports = grammar({
     _control_expression: $ => choice(
       $._literal,
       $.identifier_expression,
+      $.implicit_member_expression,
       $.path_expression,
       $.parenthesized_expression,
       $.tuple_expression,
@@ -1016,6 +1028,12 @@ module.exports = grammar({
 
     identifier_expression: $ => choice($.identifier, alias('self', $.identifier)),
 
+
+    // A member of the type the position expects, after a leading dot:
+    // `direction: .row`, `=> .primary`. What follows, as in
+    // `.black.alpha(0.05)`, is ordinary field access and method calls.
+    implicit_member_expression: $ => seq('.', field('member', $.identifier)),
+
     error_expression: $ => seq('error', field('value', $._expression)),
 
     unit_expression: _ => seq('(', ')'),
@@ -1033,6 +1051,8 @@ module.exports = grammar({
     list_constructor: $ => prec.dynamic(1, seq(
       '[', ']', field('type', $._type), field('arguments', $.call_argument_list),
     )),
+    // Records one a line need no comma between them, as a shadow list's.
+    _record_run: $ => prec(1, seq($.anonymous_record, repeat1($.anonymous_record))),
     anonymous_record: $ => seq('{', $.struct_literal_field,
       repeat(seq(optional(','), choice($.struct_literal_field, $.struct_literal_shorthand))),
       optional(','), '}'),
@@ -1124,7 +1144,7 @@ module.exports = grammar({
 
     list_expression: $ => seq(
       '[',
-      sepBy(',', $._expression),
+      sepBy(',', choice($._expression, $._record_run)),
       optional(','),
       ']',
     ),
@@ -1153,7 +1173,7 @@ module.exports = grammar({
     )),
 
     struct_literal_field: $ => seq(
-      field('name', $.identifier),
+      field('name', memberName($)),
       ':',
       field('value', $._expression),
     ),
@@ -1406,7 +1426,7 @@ module.exports = grammar({
     field_access_expression: $ => prec.left(PREC.postfix, seq(
       field('object', $._expression),
       '.',
-      field('field', choice($.identifier, $.integer_literal)),
+      field('field', choice(memberName($), $.integer_literal)),
     )),
 
     index_expression: $ => prec.left(PREC.postfix + 1, seq(
@@ -1421,7 +1441,7 @@ module.exports = grammar({
       prec(PREC.postfix, seq(
         field('object', $._expression),
         '?.',
-        field('field', choice($.identifier, $.integer_literal)),
+        field('field', choice(memberName($), $.integer_literal)),
       )),
       prec(PREC.postfix, seq(
         field('object', $._expression),
@@ -1717,6 +1737,16 @@ module.exports = grammar({
     doc_comment: _ => token(seq('///', optional(seq(/[^/\n]/, /[^\n]*/)))),
   },
 });
+
+// A keyword where only a name can be is that name (#181): a field named
+// `type` or `match` in a literal or read after `.`, and a view's `type:`
+// and `for:`, as HTML spells them.
+function memberName($) {
+  return choice(
+    $.identifier,
+    alias(choice('type', 'match', 'in', 'for', 'as', 'loop', 'import', 'enum'), $.identifier),
+  );
+}
 
 function sepBy(sep, rule) {
   return optional(sepBy1(sep, rule));

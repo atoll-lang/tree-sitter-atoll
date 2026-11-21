@@ -530,3 +530,134 @@ fn f(c task.Stream[Event]) void {
                 (identifier_expression
                   (identifier))
                 (call_argument_list)))))))))
+
+========================================
+Typed style fields, host states, and keyword field names
+========================================
+
+pub component PushButton(variant Variant = Variant.Primary) {
+    Button {
+        direction: .row
+        background: match variant {
+            Variant.Primary => .primary
+            _ => .transparent
+        }
+        color: if checked { .white } else { .black.alpha(0.5) }
+        shadow: [
+            { y: 1, blur: 3, color: .black.alpha(0.1) }
+            { y: 1, spread: -1 }
+        ]
+        when hovered { background: .accent, scale: 0.98 }
+        label { for: "agree", "agree" }
+    }
+}
+
+---
+
+(source_file
+  (component_declaration
+    (visibility_modifier)
+    (type_identifier)
+    (component_props
+      (component_prop
+        (identifier)
+        (named_type
+          (type_identifier))
+        (field_access_expression
+          (identifier_expression
+            (identifier))
+          (identifier))))
+    (component_body
+      (markup_element
+        (identifier)
+        (markup_item
+          (markup_field
+            (identifier)
+            (implicit_member_expression
+              (identifier))))
+        (markup_item
+          (markup_field
+            (identifier)
+            (match_expression
+              (identifier_expression
+                (identifier))
+              (match_arm
+                (variant_pattern
+                  (qualified_type
+                    (named_type
+                      (type_identifier))
+                    (named_type
+                      (type_identifier))))
+                (implicit_member_expression
+                  (identifier)))
+              (match_arm
+                (wildcard_pattern)
+                (implicit_member_expression
+                  (identifier))))))
+        (markup_item
+          (markup_field
+            (identifier)
+            (if_expression
+              (identifier_expression
+                (identifier))
+              (block
+                (expression_statement
+                  (implicit_member_expression
+                    (identifier))))
+              (block
+                (expression_statement
+                  (method_call_expression
+                    (implicit_member_expression
+                      (identifier))
+                    (identifier)
+                    (call_argument_list
+                      (float_literal))))))))
+        (markup_item
+          (markup_field
+            (identifier)
+            (list_expression
+              (anonymous_record
+                (struct_literal_field
+                  (identifier)
+                  (integer_literal))
+                (struct_literal_field
+                  (identifier)
+                  (integer_literal))
+                (struct_literal_field
+                  (identifier)
+                  (method_call_expression
+                    (implicit_member_expression
+                      (identifier))
+                    (identifier)
+                    (call_argument_list
+                      (float_literal)))))
+              (anonymous_record
+                (struct_literal_field
+                  (identifier)
+                  (integer_literal))
+                (struct_literal_field
+                  (identifier)
+                  (unary_expression
+                    (integer_literal)))))))
+        (markup_item
+          (markup_when
+            (identifier)
+            (markup_field
+              (identifier)
+              (implicit_member_expression
+                (identifier)))
+            (markup_field
+              (identifier)
+              (float_literal))))
+        (markup_item
+          (markup_element
+            (identifier)
+            (markup_item
+              (markup_field
+                (identifier)
+                (string_literal
+                  (string_content))))
+            (markup_item
+              (markup_text
+                (string_literal
+                  (string_content))))))))))

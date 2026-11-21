@@ -84,6 +84,10 @@
         "named": true
       },
       {
+        "type": "implicit_member_expression",
+        "named": true
+      },
+      {
         "type": "index_expression",
         "named": true
       },
@@ -1978,6 +1982,10 @@
             "named": true
           },
           {
+            "type": "implicit_member_expression",
+            "named": true
+          },
+          {
             "type": "index_expression",
             "named": true
           },
@@ -2145,6 +2153,10 @@
           },
           {
             "type": "if_expression",
+            "named": true
+          },
+          {
+            "type": "implicit_member_expression",
             "named": true
           },
           {
@@ -2329,6 +2341,10 @@
           },
           {
             "type": "if_expression",
+            "named": true
+          },
+          {
+            "type": "implicit_member_expression",
             "named": true
           },
           {
@@ -2857,6 +2873,10 @@
             "named": true
           },
           {
+            "type": "implicit_member_expression",
+            "named": true
+          },
+          {
             "type": "index_expression",
             "named": true
           },
@@ -3048,6 +3068,10 @@
           },
           {
             "type": "if_expression",
+            "named": true
+          },
+          {
+            "type": "implicit_member_expression",
             "named": true
           },
           {
@@ -3270,6 +3294,22 @@
           "named": true
         }
       ]
+    }
+  },
+  {
+    "type": "implicit_member_expression",
+    "named": true,
+    "fields": {
+      "member": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
     }
   },
   {
@@ -3793,6 +3833,10 @@
         {
           "type": "markup_text",
           "named": true
+        },
+        {
+          "type": "markup_when",
+          "named": true
         }
       ]
     }
@@ -3914,6 +3958,32 @@
     }
   },
   {
+    "type": "markup_when",
+    "named": true,
+    "fields": {
+      "state": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "markup_field",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "match_arm",
     "named": true,
     "fields": {
@@ -4027,6 +4097,10 @@
           },
           {
             "type": "if_expression",
+            "named": true
+          },
+          {
+            "type": "implicit_member_expression",
             "named": true
           },
           {
@@ -6474,6 +6548,10 @@
             "named": true
           },
           {
+            "type": "implicit_member_expression",
+            "named": true
+          },
+          {
             "type": "index_expression",
             "named": true
           },
@@ -7392,6 +7470,10 @@
   },
   {
     "type": "using",
+    "named": false
+  },
+  {
+    "type": "when",
     "named": false
   },
   {
