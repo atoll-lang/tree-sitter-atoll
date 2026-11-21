@@ -60,6 +60,9 @@ module.exports = grammar({
     [$.unit_expression, $.lambda_parameters],
     [$.function_declaration, $.never_type],
     [$.import_declaration, $.import_path],
+    // `import ui.` continues the path or opens `.{ names }`; the next
+    // token decides.
+    [$.import_path],
     [$.anonymous_record, $.query_projection],
     [$.query_order],
     [$.identifier_expression, $.struct_literal_shorthand],
@@ -192,7 +195,8 @@ module.exports = grammar({
       'component',
       field('name', alias($.identifier, $.type_identifier)),
       field('props', $.component_props),
-      field('body', $.component_body),
+      // None for a portable element the host draws (`std/ui`'s elements).
+      optional(field('body', $.component_body)),
     ),
 
     component_props: $ => seq(
@@ -382,6 +386,13 @@ module.exports = grammar({
       'import',
       choice(
         seq(field('items', sepBy1(',', seq($.identifier, optional(seq('as', $.identifier))))), 'from', field('source', choice($.string_literal, $.import_path))),
+        // import ui.{View, Text as Label}: the names follow the path,
+        // as a member follows its value.
+        seq(
+          field('source', $.import_path),
+          '.',
+          field('items', $.import_items),
+        ),
         // import { A, B } from "path"
         seq(
           field('items', $.import_items),

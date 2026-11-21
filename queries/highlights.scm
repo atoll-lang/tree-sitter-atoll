@@ -322,6 +322,10 @@
 (pointer_variant_pattern type: (named_type (type_identifier) @variant))
 (typed_member_pattern type: (_) @type)
 
+; A type an import names: `import ui.{Text, View}`.
+((import_items (identifier) @type)
+ (#match? @type "^[A-Z]"))
+
 ; ─── Markup (UI components) ──────────────────────────────────────
 
 ; A lowercase element name is an HTML tag; a PascalCase one is a

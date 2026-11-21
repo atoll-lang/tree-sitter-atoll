@@ -230,12 +230,20 @@
           }
         },
         {
-          "type": "FIELD",
-          "name": "body",
-          "content": {
-            "type": "SYMBOL",
-            "name": "component_body"
-          }
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "FIELD",
+              "name": "body",
+              "content": {
+                "type": "SYMBOL",
+                "name": "component_body"
+              }
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
         }
       ]
     },
@@ -1403,6 +1411,31 @@
                         "name": "import_path"
                       }
                     ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "FIELD",
+                  "name": "source",
+                  "content": {
+                    "type": "SYMBOL",
+                    "name": "import_path"
+                  }
+                },
+                {
+                  "type": "STRING",
+                  "value": "."
+                },
+                {
+                  "type": "FIELD",
+                  "name": "items",
+                  "content": {
+                    "type": "SYMBOL",
+                    "name": "import_items"
                   }
                 }
               ]
@@ -12758,6 +12791,9 @@
     ],
     [
       "import_declaration",
+      "import_path"
+    ],
+    [
       "import_path"
     ],
     [

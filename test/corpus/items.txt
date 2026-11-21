@@ -186,3 +186,64 @@ import "io" as IO
     source: (string_literal
       (string_content))
     alias: (identifier)))
+
+========================================
+Named imports after the path
+========================================
+
+import ui.{Button, Text as Label, View}
+pub import core/models.{User,}
+
+---
+
+(source_file
+  (import_declaration
+    (import_path
+      (identifier))
+    (import_items
+      (identifier)
+      (identifier)
+      (identifier)
+      (identifier)))
+  (import_declaration
+    (visibility_modifier)
+    (import_path
+      (identifier)
+      (identifier))
+    (import_items
+      (identifier))))
+
+========================================
+A portable element has no body
+========================================
+
+pub component View(id string)
+
+pub component Input(
+    id string,
+    disabled bool,
+)
+
+---
+
+(source_file
+  (component_declaration
+    (visibility_modifier)
+    (type_identifier)
+    (component_props
+      (component_prop
+        (identifier)
+        (named_type
+          (type_identifier)))))
+  (component_declaration
+    (visibility_modifier)
+    (type_identifier)
+    (component_props
+      (component_prop
+        (identifier)
+        (named_type
+          (type_identifier)))
+      (component_prop
+        (identifier)
+        (named_type
+          (type_identifier))))))
